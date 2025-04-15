@@ -9,3 +9,46 @@ db.sqlite
 .env
 .env.*
 !.env.example
+
+
+# Swift & Vapor
+.build/
+Packages/
+.swiftpm/
+.swift-version
+*.xcodeproj
+*.xcworkspace
+DerivedData/
+*.DS_Store
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+
+# Logs
+*.log
+
+# VSCode
+.vscode/
+
+# Dependency artifacts
+*.resolved
+
+# Other
+*.swp
+*.swo
+*.bak
+*~
+
+# Optional: ignore database files if using SQLite
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
