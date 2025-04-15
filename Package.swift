@@ -4,12 +4,13 @@ import PackageDescription
 let package = Package(
     name: "TelegramHarvester",
     platforms: [
-       .macOS(.v13)
+        .macOS(.v15) // Match the starter from ######
     ],
     dependencies: [
-        // 💧 A server-side Swift web framework.
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.110.1"),
-        // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
+        // 💧 Vapor web framework
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.113.2"), // Match the starter from ######
+        
+        // 🔵 SwiftNIO for lower-level async I/O and timer handling
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
     ],
     targets: [
