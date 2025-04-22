@@ -1,0 +1,255 @@
+/* //
+//  Project: TelegramHarvester
+//  Description: A backend system for harvesting and managing public Telegram channel data using TDLib and Vapor.
+//  Author: Najy Fannoun
+//  Developed By: Najy Fannoun
+//  Version: 1.0.0
+//  Date: April 2025
+//  Copyright: © 2025 Najy Fannoun. All rights reserved.
+//
+//  License: This project is licensed under the MIT License.
+//  You are free to use, modify, and distribute this software under the terms of the MIT License.
+//  For more details, please refer to the LICENSE file in the project root directory.
+//
+//  Disclaimer: This project is intended for educational and research purposes only.
+//  The author is not responsible for any misuse or illegal activities that may arise from the use of this software.
+//  Please use this software responsibly and in compliance with applicable laws and regulations.
+// */
+
+.app-container {
+    background: linear-gradient(135deg, #020202 0%, #0a0a0a 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: 'Orbitron', sans-serif;
+    color: #00ffff;
+}
+
+.header {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+.input-group {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.input-group input {
+    padding: 10px;
+    font-size: 1rem;
+    width: 250px;
+    margin-right: 10px;
+    background-color: #111;
+    color: #00ffff;
+    border: 1px solid #00ffff;
+    border-radius: 5px;
+}
+
+.login-btn {
+    padding: 10px 20px;
+    background-color: #00ffff;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.status, .status-info {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #0ff;
+}
+
+.channel-details {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.channel-details img {
+    max-width: 150px;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0 0 10px #00ffff66;
+}
+
+.message-grid-container {
+    padding: 20px 0;
+}
+
+.message-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.message-card {
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    border: 1px solid #00ffff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.message-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.message-text {
+    font-size: 1rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.media-preview {
+    width: 100%;
+    height: 200px;
+    background: #111;
+    border: none;
+    border-radius: 10px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    gap: 15px;
+}
+
+.pagination button {
+    background-color: #00ffff;
+    color: #000;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+
+.pagination button:hover {
+    transform: scale(1.05);
+}
+
+.pagination button:disabled {
+    background-color: #444;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.media-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: #00ffff;
+    font-weight: bold;
+    text-decoration: none;
+    border: 1px solid #00ffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+.media-link:hover {
+    background: rgba(0, 255, 255, 0.1);
+}
+
+.media-wrapper {
+    margin-top: 10px;
+}
+
+.preview-box {
+    display: flex;
+    gap: 10px;
+    background: #111;
+    border: 1px solid #0ff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    color: #0ff;
+}
+
+.preview-thumb {
+    width: 100px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.preview-text {
+    flex: 1;
+}
+
+.preview-text p {
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+}
+
+
+.media-blocked {
+    color: #ff0066;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.media-embed {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.media-frame {
+    width: 100%;
+    height: 200px;
+    border-radius: 6px;
+    border: 1px solid #0ff;
+    background-color: #000;
+}
+
+.media-link {
+    color: #0ff;
+    text-decoration: underline;
+    font-size: 0.85rem;
+    align-self: flex-start;
+}
+
+.link-preview {
+    border: 1px solid #00ffff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 8px;
+    background: rgba(0,0,0,0.8);
+  }
+  .preview-image {
+    width: 100%;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  .preview-title {
+    color: #00ffff;
+    margin: 8px 0 4px;
+  }
+  .preview-desc {
+    color: #ccc;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+  .preview-link {
+    color: #0ff;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  
