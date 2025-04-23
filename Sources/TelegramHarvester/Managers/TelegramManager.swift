@@ -71,6 +71,7 @@ final class TelegramManager: @unchecked Sendable {
 
             self.isReady = await service.isReady()
             if self.isReady {
+                try await doWhenReady()
                 return
             }
 
@@ -83,7 +84,7 @@ final class TelegramManager: @unchecked Sendable {
             // At this point, TDLib will wait for the verification code,
             // which will be sent to the user's phone number.
             // The user should enter this code in the app.
-            logger.info("📱 Verification code sent to \(phone). Please enter POST /auth/code.")
+            logger.info("📱 Verification code sent to \(phone). Please add your code http://localhost:8080/auth/code?code=XXXXX")
 
             self.isReady = true
         } catch {

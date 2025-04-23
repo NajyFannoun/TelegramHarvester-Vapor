@@ -19,19 +19,21 @@
 import Vapor
 
 /// Periodically drives your TelegramManager to fetch & persist new messages.
+/// This class handles adaptive polling: it adjusts the polling interval based
+/// on recent activity to optimize resource usage.
 final class PollingManager: @unchecked Sendable {
-    private let telegramManager: TelegramManager
-    private let eventLoop: any EventLoop
-    private let logger: Logger
+    private let telegramManager: TelegramManager   // Responsible for Telegram-related operations
+    private let eventLoop: any EventLoop           // Used for scheduling asynchronous tasks
+    private let logger: Logger                     // For logging information, warnings, and errors
 
     // Polling control and backoff parameters:
-    private var isPolling = false
-    private var interval: TimeInterval = 5.0
-    private let minInterval: TimeInterval = 1.0
-    private let maxInterval: TimeInterval = 60.0
-    private let increment: Double = 1.5
-    private let decrement: Double = 0.75
-    private var lastMessageTime: Date?
+    private var isPolling = false                  // Tracks whether polling is currently active
+    private var interval: TimeInterval = 5.0       // Initial polling interval in seconds
+    private let minInterval: TimeInterval = 1.0    // Minimum polling interval
+    private let maxInterval: TimeInterval = 60.0   // Maximum polling interval
+    private let increment: Double = 1.5            // Multiplier for backoff when no new messages
+    private let decrement: Double = 0.75           // Multiplier for more frequent polling on new messages
+    private var lastMessageTime: Date?             // Timestamp of the last successfully fetched message
 
     init(
         telegramManager: TelegramManager,
@@ -43,14 +45,16 @@ final class PollingManager: @unchecked Sendable {
         self.logger = logger
     }
 
-    /// Public: start the continuous polling loop with retries.
+    /// Starts the continuous polling loop.
+    /// Will first check if the Telegram client is authenticated before beginning.
+    /// Retries every 5 seconds until ready.
     func start() {
         guard !isPolling else {
             logger.warning("Polling already running — skipping start.")
             return
         }
 
-        // Retry loop for checking authentication and starting polling
+        // Retry loop for checking if Telegram is ready
         Task {
             while true {
                 let isReady = telegramManager.isReady
@@ -60,65 +64,82 @@ final class PollingManager: @unchecked Sendable {
                     isPolling = true
                     let newID = try await telegramManager.getLastStoredMessageID()
                     scheduleNext(since: newID)
-                    break  // Exit the loop once polling has started
+                    break  // Exit the loop once polling starts
                 } else {
                     logger.warning("❌ Telegram is not Ready. Retrying...")
                 }
 
-                // Retry after a delay (e.g., 5 seconds)
-                await Task.sleep(5 * 1_000_000_000)  // Sleep for 5 seconds before retrying
+                // Retry again after 5 seconds
+                await Task.sleep(5 * 1_000_000_000)
             }
         }
     }
 
-    /// Public: stop polling.
+    /// Stops the polling process.
     func stop() {
         isPolling = false
         logger.info("🛑 PollingManager stopped.")
     }
 
-    /// Schedule the next poll after `interval` seconds.
+    /// Schedules the next poll task using the current polling interval.
     private func scheduleNext(since lastID: Int64?) {
         guard isPolling else { return }
         logger.debug("⏳ Scheduling next poll in \(interval)s…")
+
+        // Schedule a new task after the `interval` delay
         eventLoop.scheduleTask(in: .seconds(Int64(interval))) { [weak self] in
             guard let self: PollingManager = self, self.isPolling else {
                 self?.logger.warning("PollingManager no longer active.")
                 return
             }
+
+            // Perform the polling asynchronously
             Task {
                 await self.doPoll(since: lastID)
             }
         }
     }
 
-    /// Perform one poll: fetch + store, then reschedule.
+    /// Performs a single polling operation.
+    /// Asks TelegramManager to fetch new messages and adjust polling interval accordingly.
     private func doPoll(since lastID: Int64?) async {
         logger.info("📡 Polling for new messages since \(lastID ?? 0)…")
+
         do {
-            // Ask your TelegramManager to fetch & store
+            // Attempt to fetch and store messages
             let newID = await telegramManager.pollAndStore(lastMessageID: lastID)
             lastMessageTime = Date()
-            // back off more aggressively next time
+
+            // Adjust polling interval based on whether we got new messages
             adjustInterval(hadNew: (newID != lastID))
+
+            // Schedule the next poll
             scheduleNext(since: newID)
         } catch {
+            // If polling failed, log the error and try again later
             logger.error("❌ PollingManager error: \(error)")
+
+            // Treat error as no new data to increase delay
             adjustInterval(hadNew: false)
             scheduleNext(since: lastID)
         }
     }
 
-    /// Increase or decrease our interval based on activity.
+    /// Adjusts the polling interval based on whether new messages were received.
+    /// If new data was found, the interval is reduced to poll more frequently.
+    /// If no data has been seen in a while, the interval is increased to save resources.
     private func adjustInterval(hadNew: Bool) {
         let old = interval
+
         if hadNew {
+            // New data — poll more frequently
             interval = max(minInterval, interval * decrement)
         } else if let last = lastMessageTime,
-            Date().timeIntervalSince(last) > 300
-        {
+                  Date().timeIntervalSince(last) > 300 {
+            // No new data for 5+ minutes — increase polling delay
             interval = min(maxInterval, interval * increment)
         }
+
         logger.info("🔧 Interval: \(old)s → \(interval)s")
     }
 }
